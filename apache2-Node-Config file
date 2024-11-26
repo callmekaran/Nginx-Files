@@ -1,0 +1,40 @@
+<VirtualHost *:80>
+    # Set the Server Name
+    ServerName karan.ravat.com
+
+    # Redirect all HTTP traffic to HTTPS
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^/?(.*) https://karan.ravat.com/$1 [L,R=301]
+
+    # Logging for debugging
+    ErrorLog ${APACHE_LOG_DIR}/karan.ravat.com-error.log
+    CustomLog ${APACHE_LOG_DIR}/karan.ravat.com-access.log combined
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName karan.ravat.com
+
+    # Enable SSL
+    SSLEngine On
+    SSLProxyEngine On
+
+    # Path to the SSL certificate and private key
+    SSLCertificateFile /etc/ssl/live//star_.crt
+    SSLCertificateKeyFile /etc/ssl/live/wildcard/wilcard.key
+
+    # Ignore SSL certificate validation for the backend if necessary
+    SSLProxyCheckPeerCN off
+    SSLProxyCheckPeerName off
+    SSLProxyCheckPeerExpire off
+
+    # Proxy settings
+    ProxyPreserveHost On
+    ProxyPass / http://127.0.0.1:3000/
+    ProxyPassReverse / http://127.0.0.1:3000/
+
+    # Logging for debugging
+    ErrorLog ${APACHE_LOG_DIR}/karan.ravat.com-ssl-error.log
+    CustomLog ${APACHE_LOG_DIR}/karan.ravat.com-ssl-access.log combined
+</VirtualHost>
+
