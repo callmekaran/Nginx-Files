@@ -1,0 +1,72 @@
+server {
+    listen 80;
+    server_name golden44.com www.golden44.com;
+    client_max_body_size 256M;
+    
+    location / {
+        return 301 https://golden44.com$request_uri; # Redirect to non-www with HTTPS
+    }
+}
+
+# HTTPS server block for www.golden44.com (redirect to non-www version)
+server {
+    listen 443 ssl;
+    server_name www.golden44.com;
+
+    # SSL certificate configuration (replace with your paths)
+    ssl_certificate /etc/letsencrypt/live/www.golden44.com/fullchain.pem;  # Managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.golden44.com/privkey.pem; # Managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    client_max_body_size 256M;
+
+    location / {
+        return 301 https://golden44.com$request_uri; # Redirect www to non-www with HTTPS
+    }
+}
+
+# HTTPS server block for non-www golden44.com (handling the main website)
+server {
+    listen 443 ssl;
+    server_name golden44.com;
+
+    # SSL certificate configuration (replace with your paths)
+    ssl_certificate /etc/letsencrypt/live/www.golden44.com/fullchain.pem;  # Managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/www.golden44.com/privkey.pem; # Managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    client_max_body_size 256M;
+
+    root /var/www/html/golden-websites/golden444-co-in;
+    index index.php index.html index.htm;
+
+    error_log /var/log/nginx/golden444-co-in_error.log;
+    access_log /var/log/nginx/golden444-co-in_access.log;
+
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+        index index.php index.html index.htm;
+    }
+
+    location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_split_path_info ^(.+\.php)(/.+)$;
+    fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    include fastcgi_params;
+
+    fastcgi_read_timeout 300;  # Increase the timeout value (e.g., 5 minutes)
+    fastcgi_send_timeout 300;  # Increase the timeout value (e.g., 5 minutes)
+
+    }
+
+    location = /favicon.ico { log_not_found off; access_log off; }
+    location = /robots.txt { log_not_found off; access_log off; allow all; }
+
+    location ~* \.(css|gif|ico|jpeg|jpg|js|png|webp|svg)$ {
+        expires 21600s; # Cache static assets for 6 hours
+        add_header Cache-Control "public, max-age=21600, immutable";
+    }
+
+
+}
